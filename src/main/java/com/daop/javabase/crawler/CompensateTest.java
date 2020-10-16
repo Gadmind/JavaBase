@@ -1,6 +1,6 @@
 package com.daop.javabase.crawler;
 
-import com.daop.javabase.crawler.site.DownloadResult;
+import com.daop.javabase.crawler.utils.CrawlerUtils;
 
 /**
  * @BelongsProject: javabase
