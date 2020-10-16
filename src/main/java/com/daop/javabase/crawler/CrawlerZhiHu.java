@@ -3,7 +3,7 @@ package com.daop.javabase.crawler;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.daop.javabase.crawler.site.DownloadResult;
-import com.sun.deploy.net.MessageHeader;
+import com.daop.javabase.crawler.utils.CrawlerUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
