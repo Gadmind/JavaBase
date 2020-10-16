@@ -1,15 +1,16 @@
-package com.daop.javabase.netcoding;
+package com.daop.javabase.crawler;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.daop.javabase.crawler.site.DownloadResult;
+import com.sun.deploy.net.MessageHeader;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.daop.javabase.netcoding.MyCrawler.getUrlMessage;
 
 /**
  * @BelongsProject: javabase
@@ -28,31 +29,41 @@ public class CrawlerZhiHu {
     public static void main(String[] args) {
         //情侣头像 30460976
         //手机壁纸 310217875
-        long questionsId = 310217875;
+        long questionsId = 30460976;
         int offset = 0;
-        int limit = 10;
+        int limit = 1;
 
         String sortBy = "default";
         String platform = "desktop";
         String zhiHuQuestionsUrl = "https://www.zhihu.com/api/v4/questions/" + questionsId + "/answers?" + ZHI_HU_INCLUDE + "&offset=" + offset + "&limit=" + limit + "&sort_by=" + sortBy + "&platform=" + platform;
         System.out.println(zhiHuQuestionsUrl);
-        JSONObject zhJsonObj = getUrlMessage(zhiHuQuestionsUrl, StandardCharsets.UTF_8);
+        JSONObject zhJsonObj = CrawlerUtils.getUrlResponseToJsonObject(zhiHuQuestionsUrl, StandardCharsets.UTF_8);
         JSONObject pageObj = JSON.parseObject(zhJsonObj.get("paging").toString(), JSONObject.class);
         System.out.println(pageObj.get("totals"));
 
         List<JSONObject> zhAnswers = JSON.parseArray(zhJsonObj.get("data").toString(), JSONObject.class);
-        long count = 0;
+        String filePath = "F:\\Crawler Img\\zhihu\\情侣头像\\";
+        int fail = 0, success = 0;
+        List<DownloadResult> downloadResults = new ArrayList<>(20);
         for (JSONObject zhAnswer : zhAnswers) {
             String content = (String) zhAnswer.get("content");
             String reg = "<img src=\"http(.*?)\"";
             Pattern pattern = Pattern.compile(reg);
             Matcher matcher = pattern.matcher(content);
             while (matcher.find()) {
-                System.out.println(matcher.group().replaceAll("<img src=\"", "").replaceAll("\\?(.*)", ""));
-                count++;
+                String imgUrl = matcher.group().replaceAll("<img src=\"", "").replaceAll("\\?(.*)", "");
+                System.out.println(imgUrl);
+                DownloadResult dr = CrawlerUtils.downloadImg(imgUrl, filePath);
+                if (dr != null) {
+                    fail++;
+                    downloadResults.add(dr);
+                } else {
+                    success++;
+                }
+                System.out.println("第" + (success + fail) + "张，成功" + success + "张，失败" + fail);
             }
-
         }
-        System.out.println("共" + count + "张");
+
+        downloadResults.forEach(DownloadResult::toString);
     }
 }
