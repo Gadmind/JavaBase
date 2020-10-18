@@ -29,7 +29,7 @@ public class CrawlerZhiHu {
     public static void main(String[] args) {
         //情侣头像 30460976
         //手机壁纸 310217875
-        long questionsId = 30460976;
+        long questionsId = 354987700;
         int offset = 0;
         int limit = 1;
 
@@ -42,7 +42,7 @@ public class CrawlerZhiHu {
         System.out.println(pageObj.get("totals"));
 
         List<JSONObject> zhAnswers = JSON.parseArray(zhJsonObj.get("data").toString(), JSONObject.class);
-        String filePath = "F:\\Crawler Img\\zhihu\\情侣头像\\";
+        String filePath = "F:\\Crawler Img\\zhihu\\pika\\";
         int fail = 0, success = 0;
         List<DownloadResult> downloadResults = new ArrayList<>(20);
         for (JSONObject zhAnswer : zhAnswers) {

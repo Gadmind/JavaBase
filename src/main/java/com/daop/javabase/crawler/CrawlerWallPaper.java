@@ -47,6 +47,7 @@ public class CrawlerWallPaper {
         if (cycle <= 0) {
             cycle = (count / everyCount) + 1;
         }
+
         String reqUrl = "http://wallpaper.apc.360.cn/index.php?c=WallPaper&a=getAppsByCategory&cid=" + cid + "&start=" + start + "&count=" + everyCount;
 
 
@@ -81,6 +82,7 @@ public class CrawlerWallPaper {
                     }
                     if (df != null) {
                         fail++;
+                        df.setCategory(type);
                         failList.add(df);
                     } else {
                         success++;

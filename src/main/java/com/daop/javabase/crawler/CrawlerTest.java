@@ -45,6 +45,9 @@ public class CrawlerTest {
     }
 
     public static void main(String[] args) {
+//        types.add(new WallPaper("5", "游戏", ""));
+//        types.add(new WallPaper("36", "4K", ""));
+//        types.add(new WallPaper("35", "文字控", ""));
         types.add(new WallPaper("6", "女生", ""));
         try {
             for (WallPaper wpt : types) {
@@ -53,11 +56,11 @@ public class CrawlerTest {
                     String cid = wpt.getCid();
                     String type = wpt.getCategory();
                     String tag = wpt.getTag();
-                    int start = 10;
-                    int everyCount = 10;
-                    int cycle= 20;
-                    String downloadPath = "F:" + File.separator + "Crawler Img" + File.separator + "again" + File.separator ;
-                    myCrawler.startCrawler(cid,type,tag,start,everyCount,cycle,downloadPath);
+                    int start = 0;
+                    int everyCount = 200;
+                    int cycle = 0;
+                    String downloadPath = "F:" + File.separator + "Crawler Img" + File.separator;
+                    myCrawler.startCrawler(cid, type, tag, start, everyCount, cycle, downloadPath);
                 });
             }
         } catch (Exception e) {
