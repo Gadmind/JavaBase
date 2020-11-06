@@ -8,6 +8,12 @@ import com.daop.javabase.utils.CloseUtil;
 import java.io.*;
 import java.net.*;
 import java.nio.charset.Charset;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @BelongsProject: javabase
@@ -24,10 +30,15 @@ public class CrawlerUtils {
      * @param url 请求地址
      * @return URL连接
      */
-    public static URLConnection getUrlConnection(String url) throws IOException {
-        URLConnection urlConnection = new URL(url).openConnection();
-        urlConnection.setRequestProperty("user-agent", " Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.75 Safari/537.36");
-        urlConnection.setRequestProperty("cookie"," __cfduid=d39c9ce8f5d1eca81dacbd986b4302e7e1602762248; remember_web_59ba36addc2b2f9401580f014c7f58ea4e30989d=eyJpdiI6IlpZclRGOTk0Nm1qR1dsQ00xTDRZR2c9PSIsInZhbHVlIjoidmViMk1HR0I5N3M4T1F1Q3lXSldYXC9MR2NoWGk5VmVhUUZIbU5zcHJkajhERlhOT1wvT3c4SHR1YlpXS1R4UnJnZ21HNHBxN1ZYMlc0MTJFcTVTZzI0VTlzU2ttXC9mK0F3U2krSXFRZ3A2V2ZHWTBadXRcL0RQdGIyRVhhS1NTR2RXZE5NZERiT1J6dFh3TFRyc2RhU2xROEIrTnNLMFRzN080cDVzYjdJQWlaSzlcL3lqMFwvMmJhR1wvYkdET0oyZG16YyIsIm1hYyI6IjgzMGI1NjQwYzU3NjMyYzdhMjNmNTAxNzcwYmFjYmViYjdmYjc4MDc5MDA4OTljZTVmZjkzOTQxOTUzYmE0ZGMifQ%3D%3D; _pk_ses.1.01b8=1; XSRF-TOKEN=eyJpdiI6IjN5MnJTZXd2aGZJaEhqQ1orYWdxMEE9PSIsInZhbHVlIjoiYjRPaTZtdFhQMkJ5QUpxaEQxZDJzKzdqUDlXa1pDMGJjRTl4N1pXd2N0akRvRVlweG5URVZsZGxpd0hDa0J6WiIsIm1hYyI6IjI2N2Y3YWRmNTE4Y2FlMmY2NDc5NGE0ZTI5YWRkMDVkOTdjZDkzMjQ0ZmY1ZDQ2ZWUxMDdiOTUzYmU1YmEyZWUifQ%3D%3D; wallhaven_session=eyJpdiI6IlkzeW9MV3pZdHpKR29qUjB1ZW1wRXc9PSIsInZhbHVlIjoiNHJDMitxWDhqa3g1YUF3cWhYNFR3VXBwMVZWbUFvbXJjNkFra3R6UHBQTTZFKzFCaGxZUVBleDVCQmJTZDB6bSIsIm1hYyI6IjcwMWI2Y2NjOTZjMDAwNGY3ZDU3OWVmNjI4MDBmZGJiZTg3NGE4MzBjYjc3Y2RmNWVmMjE1NTc1ZTRmMzU4ZTQifQ%3D%3D; _pk_id.1.01b8=da33600227865f77.1602762263.9.1602914617.1602901937.");
+    public static URLConnection getUrlConnection(String url) {
+        URLConnection urlConnection = null;
+        try {
+            urlConnection = new URL(url).openConnection();
+            urlConnection.setRequestProperty("user-agent", " Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.75 Safari/537.36");
+            urlConnection.setRequestProperty("cookie", " __cfduid=d39c9ce8f5d1eca81dacbd986b4302e7e1602762248; remember_web_59ba36addc2b2f9401580f014c7f58ea4e30989d=eyJpdiI6IlpZclRGOTk0Nm1qR1dsQ00xTDRZR2c9PSIsInZhbHVlIjoidmViMk1HR0I5N3M4T1F1Q3lXSldYXC9MR2NoWGk5VmVhUUZIbU5zcHJkajhERlhOT1wvT3c4SHR1YlpXS1R4UnJnZ21HNHBxN1ZYMlc0MTJFcTVTZzI0VTlzU2ttXC9mK0F3U2krSXFRZ3A2V2ZHWTBadXRcL0RQdGIyRVhhS1NTR2RXZE5NZERiT1J6dFh3TFRyc2RhU2xROEIrTnNLMFRzN080cDVzYjdJQWlaSzlcL3lqMFwvMmJhR1wvYkdET0oyZG16YyIsIm1hYyI6IjgzMGI1NjQwYzU3NjMyYzdhMjNmNTAxNzcwYmFjYmViYjdmYjc4MDc5MDA4OTljZTVmZjkzOTQxOTUzYmE0ZGMifQ%3D%3D; _pk_ses.1.01b8=1; XSRF-TOKEN=eyJpdiI6IjN5MnJTZXd2aGZJaEhqQ1orYWdxMEE9PSIsInZhbHVlIjoiYjRPaTZtdFhQMkJ5QUpxaEQxZDJzKzdqUDlXa1pDMGJjRTl4N1pXd2N0akRvRVlweG5URVZsZGxpd0hDa0J6WiIsIm1hYyI6IjI2N2Y3YWRmNTE4Y2FlMmY2NDc5NGE0ZTI5YWRkMDVkOTdjZDkzMjQ0ZmY1ZDQ2ZWUxMDdiOTUzYmU1YmEyZWUifQ%3D%3D; wallhaven_session=eyJpdiI6IlkzeW9MV3pZdHpKR29qUjB1ZW1wRXc9PSIsInZhbHVlIjoiNHJDMitxWDhqa3g1YUF3cWhYNFR3VXBwMVZWbUFvbXJjNkFra3R6UHBQTTZFKzFCaGxZUVBleDVCQmJTZDB6bSIsIm1hYyI6IjcwMWI2Y2NjOTZjMDAwNGY3ZDU3OWVmNjI4MDBmZGJiZTg3NGE4MzBjYjc3Y2RmNWVmMjE1NTc1ZTRmMzU4ZTQifQ%3D%3D; _pk_id.1.01b8=da33600227865f77.1602762263.9.1602914617.1602901937.");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         return urlConnection;
     }
 
@@ -100,6 +111,14 @@ public class CrawlerUtils {
         return download(imgUrl, filePath, "");
     }
 
+    /**
+     * 下载
+     *
+     * @param url
+     * @param filePath
+     * @param fileName
+     * @return
+     */
     private static DownloadResult download(String url, String filePath, String fileName) {
         DownloadResult df = null;
         if (url != null) {
@@ -145,6 +164,73 @@ public class CrawlerUtils {
 
 
     /**
+     * 多线程下载
+     *
+     * @return
+     */
+    public static DownloadResult downloadByMulThread(int threadCount, String url, String filePath) {
+        ExecutorService threadPool = new ThreadPoolExecutor(30,
+                40,
+                3L, TimeUnit.SECONDS,
+                new LinkedBlockingQueue<Runnable>(30),
+                new ThreadPoolExecutor.DiscardOldestPolicy());
+
+        File file = new File(filePath);
+        HttpURLConnection urlConnection = null;
+        try {
+            urlConnection = (HttpURLConnection) getUrlConnection(url);
+            Map<String, Object> fileInfo = getFileSize(url);
+            url = (String) fileInfo.get("url");
+            long fileSize = (long) fileInfo.get("fileSize");
+            RandomAccessFile accessFile = new RandomAccessFile(file, "rwd");
+            accessFile.setLength(fileSize);
+            accessFile.close();
+            long pieceSize = fileSize % threadCount == 0 ? fileSize / threadCount : fileSize / threadCount + 1;
+            for (int i = 0; i < threadCount; i++) {
+                threadPool.execute(
+                        new DownloadThread(i, pieceSize, url, file)
+                );
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            threadPool.shutdown();
+            if (urlConnection != null) {
+                urlConnection.disconnect();
+            }
+        }
+        return null;
+    }
+
+    private static Map<String, Object> getFileSize(String url) {
+        return getFileSize(url, 0);
+    }
+
+    private static Map<String, Object> getFileSize(String url, int next) {
+        Map<String, Object> res = new HashMap<>(2);
+        HttpURLConnection urlConnection = null;
+        try {
+            String suffix = url.substring(url.lastIndexOf("."));
+
+            String[] suffixs = {".jpg", ".jpeg", ".gif", ".psd", ".tiff", ".tga", ".png", ".eps"};
+            for (String s : suffixs) {
+                String nexturl = url.replaceFirst(suffix, s);
+                urlConnection = (HttpURLConnection) new URL(nexturl).openConnection();
+                urlConnection.setRequestProperty("user-agent", " Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.75 Safari/537.36");
+                long fileSize = urlConnection.getContentLengthLong();
+                if (fileSize > -1) {
+                    res.put("url", nexturl);
+                    res.put("fileSize", fileSize);
+                    break;
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
+
+    /**
      * 创建文件目录
      *
      * @param filePath 文件目录路径
@@ -155,6 +241,52 @@ public class CrawlerUtils {
             System.out.println("文件目录不存在,创建目录");
             if (file.mkdirs()) {
                 System.out.println("文件目录创建成功！");
+            }
+        }
+    }
+
+    private static class DownloadThread implements Runnable {
+        private int threadNum;
+        private long pieceSize;
+        private String url;
+        private File file;
+
+        public DownloadThread(int threadNum, long pieceSize, String url, File file) {
+            this.threadNum = threadNum;
+            this.pieceSize = pieceSize;
+            this.url = url;
+            this.file =file;
+        }
+
+        @Override
+        public void run() {
+            long start = threadNum * pieceSize;
+            long end = (threadNum + 1) * pieceSize;
+            InputStream is = null;
+            RandomAccessFile accessFile = null;
+            try {
+                accessFile = new RandomAccessFile(file, "rwd");
+                accessFile.seek(start);
+                URLConnection urlConnection = getUrlConnection(url);
+                urlConnection.setRequestProperty("Range", "bytes=" + start + "-" + end);
+                is = urlConnection.getInputStream();
+                System.out.println(start + "===" + end);
+                byte[] buffer = new byte[1024];
+                int len;
+                while ((len = is.read(buffer)) != -1) {
+                    accessFile.write(buffer, 0, len);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    assert accessFile != null;
+                    accessFile.close();
+                    assert is != null;
+                    is.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
